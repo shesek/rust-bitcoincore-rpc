@@ -22,7 +22,7 @@ use serde_json;
 use bitcoin::hashes::hex::{FromHex, ToHex};
 use bitcoin::secp256k1::Signature;
 use bitcoin::{Address, Amount, Block, BlockHeader, OutPoint, PrivateKey, PublicKey, Script, Transaction};
-use log::Level::Debug;
+use log::Level::{Debug, Trace, Warn};
 use serde::{Deserialize, Serialize};
 
 use error::*;
@@ -986,13 +986,22 @@ impl RpcApi for Client {
     ) -> Result<T> {
         let req = self.client.build_request(&cmd, &args);
         if log_enabled!(Debug) {
-            debug!("JSON-RPC request: {}", serde_json::to_string(&req).unwrap());
+            debug!("JSON-RPC request: {} {}", cmd, serde_json::Value::from(args));
         }
 
         let resp = self.client.send_request(&req).map_err(Error::from);
-        if log_enabled!(Debug) && resp.is_ok() {
-            let resp = resp.as_ref().unwrap();
-            debug!("JSON-RPC response: {}", serde_json::to_string(resp).unwrap());
+        if log_enabled!(Warn) {
+            match resp {
+                Err(ref e) => warn!("JSON-RPC error for {}: {:?}", cmd, e),
+                Ok(ref resp) => {
+                    if let Some(ref e) = resp.error {
+                        warn!("JSON-RPC error for {}: {:?}", cmd, e);
+                    } else if log_enabled!(Trace) {
+                        let result = resp.result.as_ref().unwrap_or(&serde_json::Value::Null);
+                        trace!("JSON-RPC response for {}: {}", cmd, result);
+                    }
+                }
+            }
         }
         Ok(resp?.into_result()?)
     }
