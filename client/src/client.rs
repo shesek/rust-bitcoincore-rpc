@@ -986,19 +986,19 @@ impl RpcApi for Client {
     ) -> Result<T> {
         let req = self.client.build_request(&cmd, &args);
         if log_enabled!(Debug) {
-            debug!("JSON-RPC request: {} {}", cmd, serde_json::Value::from(args));
+            debug!(target: "bitcoincore_rpc", "JSON-RPC request: {} {}", cmd, serde_json::Value::from(args));
         }
 
         let resp = self.client.send_request(&req).map_err(Error::from);
         if log_enabled!(Warn) {
             match resp {
-                Err(ref e) => warn!("JSON-RPC error for {}: {:?}", cmd, e),
+                Err(ref e) => warn!(target: "bitcoincore_rpc", "JSON-RPC error for {}: {:?}", cmd, e),
                 Ok(ref resp) => {
                     if let Some(ref e) = resp.error {
-                        warn!("JSON-RPC error for {}: {:?}", cmd, e);
+                        warn!(target: "bitcoincore_rpc", "JSON-RPC error for {}: {:?}", cmd, e);
                     } else if log_enabled!(Trace) {
                         let result = resp.result.as_ref().unwrap_or(&serde_json::Value::Null);
-                        trace!("JSON-RPC response for {}: {}", cmd, result);
+                        trace!(target: "bitcoincore_rpc", "JSON-RPC response for {}: {}", cmd, result);
                     }
                 }
             }
