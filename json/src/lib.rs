@@ -26,6 +26,7 @@ use std::collections::HashMap;
 
 use bitcoin::consensus::encode;
 use bitcoin::hashes::hex::{FromHex, ToHex};
+use bitcoin::hashes::sha256;
 use bitcoin::util::{bip158, bip32};
 use bitcoin::{Address, Amount, SignedAmount, PrivateKey, PublicKey, Script, Transaction};
 use serde::de::Error as SerdeError;
@@ -1155,6 +1156,29 @@ pub struct GetNetTotalsResultUploadTarget {
     pub bytes_left_in_cycle: u64,
     /// Seconds left in current time cycle
     pub time_left_in_cycle: u64,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
+pub struct GetTxOutSetInfoResult {
+    /// The current block height (index)
+    pub height: u64,
+    /// The hash of the block at the tip of the chain
+    #[serde(with = "::serde_hex", rename = "bestblock")]
+    pub best_block: Vec<u8>,
+    /// The number of transactions with unspent outputs
+    pub transactions: u64,
+    /// The number of unspent transaction outputs
+    #[serde(rename = "txouts")]
+    pub tx_outs: u64,
+    /// A meaningless metric for UTXO set size
+    pub bogosize: u64,
+    /// The serialized hash
+    pub hash_serialized_2: sha256::Hash,
+    /// The estimated size of the chainstate on disk
+    pub disk_size: u64,
+    /// The total amount
+    #[serde(with = "bitcoin::util::amount::serde::as_btc")]
+    pub total_amount: Amount,
 }
 
 /// Used to represent an address type.

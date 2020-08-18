@@ -974,6 +974,12 @@ pub trait RpcApi: Sized {
         let mut args = [opt_into_json(nblocks)?, opt_into_json(height)?];
         self.call("getnetworkhashps", handle_defaults(&mut args, &[null(), null()]))
     }
+
+    /// Returns statistics about the unspent transaction output set.
+    /// This call may take some time.
+    fn get_tx_out_set_info(&self) -> Result<json::GetTxOutSetInfoResult> {
+        self.call("gettxoutsetinfo", &[])
+    }
 }
 
 /// Client implements a JSON-RPC client for the Bitcoin Core daemon or compatible APIs.
