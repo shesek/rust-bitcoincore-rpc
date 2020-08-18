@@ -963,6 +963,11 @@ pub trait RpcApi: Sized {
     fn get_net_totals(&self) -> Result<json::GetNetTotalsResult> {
         self.call("getnettotals", &[])
     }
+
+    /// Returns the total uptime of the server in seconds
+    fn uptime(&self) -> Result<u64> {
+        self.call("uptime", &[])
+    }
 }
 
 /// Client implements a JSON-RPC client for the Bitcoin Core daemon or compatible APIs.
